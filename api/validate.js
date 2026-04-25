@@ -13,6 +13,11 @@ export default async function handler(req, res) {
   if (!apiKey)
     return res.status(500).json({ error: 'API key not configured. Set ANTHROPIC_API_KEY.' });
 
+  const isOAuthToken = apiKey.startsWith('sk-ant-oat');
+  const authHeaders = isOAuthToken
+    ? { 'Authorization': `Bearer ${apiKey}`, 'anthropic-beta': 'claude-code-20250219' }
+    : { 'x-api-key': apiKey };
+
   const systemPrompt = `You are an expert Agile coach. Evaluate user stories and epics and return ONLY valid JSON — no markdown fences, no preamble.`;
 
   const userPrompt = `Evaluate this ${type || 'user story or epic'} against Agile best practices.
@@ -57,7 +62,7 @@ Generate exactly 4-6 recommendedChanges. Each must be actionable and specific. P
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        ...authHeaders,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
