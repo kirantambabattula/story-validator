@@ -66,7 +66,7 @@ Generate exactly 4-6 recommendedChanges. Each must be actionable and specific. P
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -74,8 +74,9 @@ Generate exactly 4-6 recommendedChanges. Each must be actionable and specific. P
     });
 
     if (!response.ok) {
-      console.error('Anthropic error:', await response.text());
-      return res.status(502).json({ error: 'AI service error. Please try again.' });
+      const errBody = await response.text();
+      console.error('Anthropic error:', response.status, errBody);
+      return res.status(502).json({ error: `Anthropic ${response.status}: ${errBody}` });
     }
 
     const data = await response.json();
