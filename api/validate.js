@@ -26,7 +26,7 @@ function validate(text, typeHint) {
 
   // ── Structure detection ──────────────────────────────────────────────────
   const asAMatch   = text.match(/as\s+an?\s+([^,\.]+)/i);
-  const iWantMatch = text.match(/i\s+want\s+(?:to\s+)?([^,\.so]+)/i);
+  const iWantMatch = text.match(/i\s+want\s+(?:to\s+)?(.+?)(?=\s+so\s+that|\.|,|$)/i);
   const soThatMatch= text.match(/so\s+that\s+(.+)/i);
   const acLines    = text.split('\n').filter(l => /^AC\s*:|acceptance criteria/i.test(l));
 
