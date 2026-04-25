@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StoryValidator — Agile Quality Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#ffffff; --bg2:#f4f6fb; --bg3:#e8ecf5; --bg4:#dde3f0;
+  --text:#111827; --text2:#4b5563; --text3:#9ca3af;
+  --border:#e2e8f0; --border2:#c7d2e8;
+  --blue:#2563eb; --blue-bg:#eff6ff; --blue-t:#1d4ed8; --blue-light:#dbeafe;
+  --green:#16a34a; --green-bg:#f0fdf4; --green-t:#15803d; --green-light:#dcfce7;
+  --amber:#d97706; --amber-bg:#fffbeb; --amber-t:#b45309; --amber-light:#fef3c7;
+  --red:#dc2626; --red-bg:#fef2f2; --red-t:#b91c1c; --red-light:#fee2e2;
+  --purple:#7c3aed; --purple-bg:#f5f3ff; --purple-t:#6d28d9; --purple-light:#ede9fe;
+  --teal:#0d9488; --teal-bg:#f0fdfa; --teal-light:#ccfbf1;
+  --r:10px; --r-sm:6px; --r-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1d27; --bg2:#13151e; --bg3:#21243a; --bg4:#2a2f4a;
+    --text:#f1f5f9; --text2:#94a3b8; --text3:#475569;
+    --border:#2d3452; --border2:#3d4a6b;
+    --blue:#3b82f6; --blue-bg:#1e2a4a; --blue-t:#93c5fd; --blue-light:#1e3a5f;
+    --green:#22c55e; --green-bg:#0f2a1a; --green-t:#86efac; --green-light:#14532d;
+    --amber:#f59e0b; --amber-bg:#2a1f07; --amber-t:#fcd34d; --amber-light:#451a03;
+    --red:#f87171; --red-bg:#2a0d0d; --red-t:#fca5a5; --red-light:#450a0a;
+    --purple:#a78bfa; --purple-bg:#1e1a3a; --purple-t:#c4b5fd; --purple-light:#2e1a5e;
+    --teal:#2dd4bf; --teal-bg:#0d2a28; --teal-light:#134e4a;
+    --shadow:0 1px 3px rgba(0,0,0,0.3); --shadow-md:0 4px 12px rgba(0,0,0,0.4);
+  }
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;padding:0 0 5rem}
+
+/* HEADER */
+.header{background:var(--bg);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:30px;height:30px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.brand-name{font-size:15px;font-weight:600;color:var(--text)}
+.brand-sub{font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 9px}
+
+/* LAYOUT */
+.main{max-width:760px;margin:0 auto;padding:1.75rem 1.25rem;display:flex;flex-direction:column;gap:14px}
+
+/* CARDS */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem;box-shadow:var(--shadow)}
+.card-accent-blue{border-left:3px solid var(--blue)}
+.card-accent-green{border-left:3px solid var(--green)}
+.card-accent-purple{border-left:3px solid var(--purple)}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.sec-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em}
+.sec-icon{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.icon-blue{background:var(--blue-light)}.icon-green{background:var(--green-light)}.icon-purple{background:var(--purple-light)}.icon-amber{background:var(--amber-light)}
+
+/* TYPE CHIPS */
+.type-row{display:flex;gap:7px;margin-bottom:12px}
+.chip{font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.chip:not(.active):hover{background:var(--bg3);border-color:var(--border2)}
+
+/* TEXTAREA */
+.ta-wrap{position:relative}
+textarea{width:100%;min-height:120px;padding:11px 12px;font-size:14px;font-family:inherit;line-height:1.65;color:var(--text);background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r-sm);resize:vertical;outline:none;transition:border-color .15s}
+textarea::placeholder{color:var(--text3)}
+textarea:focus{border-color:var(--blue);background:var(--bg)}
+.input-row{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:8px;flex-wrap:wrap}
+.char-hint{font-size:12px;color:var(--text3)}
+.btn-row{display:flex;gap:8px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;font-size:13px;font-weight:500;font-family:inherit;border-radius:var(--r-sm);cursor:pointer;transition:all .15s;border:1.5px solid transparent;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover:not(:disabled){background:var(--blue-t);border-color:var(--blue-t)}
+.btn-ghost{background:transparent;color:var(--text2);border-color:var(--border2)}
+.btn-ghost:hover:not(:disabled){background:var(--bg3)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover:not(:disabled){background:var(--green-t)}
+.btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
+.btn-purple:hover:not(:disabled){background:var(--purple-t)}
+.btn-outline-blue{background:var(--blue-bg);color:var(--blue-t);border-color:var(--blue-light)}
+.btn-outline-blue:hover{background:var(--blue-light)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+/* LOADING */
+.loading{display:none;align-items:center;gap:10px;padding:14px 0}
+.loading.vis{display:flex}
+.spin{width:16px;height:16px;border:2.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:var(--text2)}
+.loading-txt strong{display:block;font-size:14px;color:var(--text);margin-bottom:1px}
+
+/* ERROR */
+.err{display:none;font-size:13px;color:var(--red-t);background:var(--red-bg);border:1px solid var(--red-light);border-radius:var(--r-sm);padding:9px 12px;margin-top:10px}
+.err.vis{display:block}
+
+/* SCORE HERO */
+.score-hero{display:flex;align-items:center;gap:1.5rem}
+.ring-wrap{position:relative;width:80px;height:80px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-big{font-size:22px;font-weight:700;line-height:1}
+.score-denom{font-size:10px;color:var(--text3);margin-top:1px}
+.score-info h2{font-size:17px;font-weight:600;margin-bottom:7px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px}
+.badge-blue{background:var(--blue-light);color:var(--blue-t)}
+.badge-green{background:var(--green-light);color:var(--green-t)}
+.badge-amber{background:var(--amber-light);color:var(--amber-t)}
+.badge-red{background:var(--red-light);color:var(--red-t)}
+.badge-purple{background:var(--purple-light);color:var(--purple-t)}
+.badge-gray{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+
+/* SCORE CHANGE ANIMATION */
+@keyframes scoreUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.score-updated{animation:scoreUp .4s ease}
+
+/* DIMS */
+.dims{display:flex;flex-direction:column;gap:8px}
+.dim-row{display:grid;grid-template-columns:150px 1fr 38px;align-items:center;gap:10px;cursor:pointer;padding:3px 0;border-radius:6px}
+.dim-row:hover .dim-name{color:var(--text)}
+.dim-name{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .12s}
+.bar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.bar{height:100%;border-radius:3px;width:0;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.bar-green{background:var(--green)}
+.bar-amber{background:var(--amber)}
+.bar-red{background:var(--red)}
+.dim-val{font-size:12px;font-weight:600;text-align:right}
+.dim-val.high{color:var(--green-t)}
+.dim-val.mid{color:var(--amber-t)}
+.dim-val.low{color:var(--red-t)}
+.dim-comment{grid-column:1/-1;font-size:12px;color:var(--text3);line-height:1.55;display:none;padding:4px 0 2px;border-top:1px dashed var(--border);margin-top:3px}
+.dim-row.open .dim-comment{display:block}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fb-head{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.fb-head.g{color:var(--green-t)}.fb-head.r{color:var(--red-t)}
+.dot-g{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.dot-r{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0}
+.fb-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.fb-list li{font-size:13px;color:var(--text2);line-height:1.5;padding-left:13px;position:relative}
+.fb-list li::before{content:'–';position:absolute;left:0;color:var(--text3)}
+
+/* RECOMMENDED CHANGES */
+.rc-list{display:flex;flex-direction:column;gap:10px}
+.rc-item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;transition:all .15s;user-select:none}
+.rc-item:hover{border-color:var(--border2);background:var(--bg)}
+.rc-item.selected{background:var(--blue-bg);border-color:var(--blue-light)}
+.rc-cb{width:18px;height:18px;border:2px solid var(--border2);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rc-item.selected .rc-cb{background:var(--blue);border-color:var(--blue)}
+.rc-body{flex:1;min-width:0}
+.rc-top{display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap}
+.rc-cat{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.priority-high{color:var(--red-t);background:var(--red-light);padding:2px 7px;border-radius:20px}
+.priority-medium{color:var(--amber-t);background:var(--amber-light);padding:2px 7px;border-radius:20px}
+.priority-low{color:var(--green-t);background:var(--green-light);padding:2px 7px;border-radius:20px}
+.rc-issue{font-size:13px;color:var(--text);font-weight:500;margin-bottom:4px}
+.rc-change{font-size:12px;color:var(--text2);line-height:1.5;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 9px;font-family:'Courier New',monospace;word-break:break-word}
+.rc-impact{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--teal);background:var(--teal-bg);padding:2px 7px;border-radius:20px;margin-top:6px;border:1px solid var(--teal-light)}
+
+.rc-actions{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.rc-sel-count{font-size:13px;color:var(--text2)}
+.rc-sel-count strong{color:var(--text)}
+
+/* REWRITE */
+.rw-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;position:relative}
+.rw-text{font-size:13px;line-height:1.75;color:var(--text);white-space:pre-wrap;font-family:inherit}
+.rw-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* EXPORT */
+.export-card{background:linear-gradient(135deg,var(--blue-bg) 0%,var(--purple-bg) 100%);border:1px solid var(--blue-light)}
+.export-card .sec-title{color:var(--blue-t)}
+.export-row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* RESULTS FADE */
+#results{display:none;flex-direction:column;gap:14px}
+#results.vis{display:flex;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:2px 0}
+
+/* FOOTER */
+footer{text-align:center;padding:2rem 1rem 0;font-size:12px;color:var(--text3)}
+
+@media(max-width:540px){
+  .two-col{grid-template-columns:1fr}
+  .dim-row{grid-template-columns:110px 1fr 32px}
+  .header{padding:0 1rem}
+  .main{padding:1.25rem .875rem}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <path d="M2 4h11M2 7.5h8M2 11h5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">StoryValidator</span>
+  </div>
+  <span class="brand-sub">INVEST Framework · AI-Powered</span>
+</header>
+
+<div class="main">
+
+  <!-- INPUT CARD -->
+  <div class="card card-accent-blue">
+    <div class="sec-head">
+      <div class="sec-title">
+        <div class="sec-icon icon-blue">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 3h9M1 5.5h7M1 8h5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        Your story or epic
+      </div>
+    </div>
+
+    <div class="type-row">
+      <button class="chip active" data-type="auto">Auto-detect</button>
+      <button class="chip" data-type="user_story">User story</button>
+      <button class="chip" data-type="epic">Epic</button>
+    </div>
+
+    <div class="ta-wrap">
+      <textarea id="ta" placeholder="As a returning customer, I want to save multiple shipping addresses so that I can check out faster on future orders."></textarea>
+    </div>
+
+    <div id="err" class="err"></div>
+
+    <div class="input-row">
+      <span class="char-hint" id="hint">⌘ + Enter to analyze</span>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-sm" id="clear-btn" onclick="clearInput()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Clear
+        </button>
+        <button class="btn btn-primary" id="analyze-btn" onclick="doValidate()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l5 5-5 5M1 6h10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Analyze
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loader" class="loading">
+    <div class="spin"></div>
+    <div class="loading-txt"><strong>Analyzing your submission…</strong>Evaluating against INVEST criteria, scope &amp; clarity</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <!-- SCORE -->
+    <div class="card card-accent-green" id="score-card">
+      <div class="sec-head">
+        <div class="sec-title">
+          <div class="sec-icon icon-green">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 6L4 9l5.5-7" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Quality score
+        </div>
+        <div id="score-timestamp" style="font-size:11px;color:var(--text3)"></div>
+      </div>
+      <div class="score-hero">
+        <div class="ring-wrap">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="30" fill="none" stroke="var(--bg3)" stroke-width="7"/>
+            <circle cx="40" cy="40" r="30" fill="none" stroke="#16a34a" stroke-width="7"
+              stroke-dasharray="188.5" stroke-dashoffset="188.5" id="ring-c" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-center">
+            <span class="score-big" id="score-num">—</span>
+            <span class="score-denom">/ 100</span>
+          </div>
+        </div>
+        <div class="score-info">
+          <h2 id="score-label">Analyzing…</h2>
+          <div class="badges" id="badges-row"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIMENSIONS -->
+    <div class="card">
+      <div class="sec-head">
+        <div class="sec-title">
+          <div class="sec-icon icon-blue">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1" y="2" width="9" height="1.5" rx=".75" fill="#2563eb"/><rect x="1" y="5" width="6.5" height="1.5" rx=".75" fill="#2563eb"/><rect x="1" y="8" width="4" height="1.5" rx=".75" fill="#2563eb"/></svg>
+          </div>
+          Dimension breakdown
+        </div>
+        <span style="font-size:11px;color:var(--text3)">tap row to expand</span>
+      </div>
+      <div class="dims" id="dims-list"></div>
+    </div>
+
+    <!-- STRENGTHS + IMPROVEMENTS -->
+    <div class="two-col">
+      <div class="card">
+        <div class="fb-head g"><span class="dot-g"></span>Strengths</div>
+        <ul class="fb-list" id="strengths-list"></ul>
+      </div>
+      <div class="card">
+        <div class="fb-head r"><span class="dot-r"></span>Improvements</div>
+        <ul class="fb-list" id="improvements-list"></ul>
+      </div>
+    </div>
+
+    <!-- RECOMMENDED CHANGES -->
+    <div class="card card-accent-purple" id="rc-card">
+      <div class="sec-head">
+        <div class="sec-title">
+          <div class="sec-icon icon-purple">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          Recommended changes
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="selectAll()">Select all</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectNone()">Clear</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Select the changes you want to apply, then click <strong style="color:var(--text2)">Apply &amp; Reanalyze</strong> to see your updated score.</p>
+      <div class="rc-list" id="rc-list"></div>
+      <div class="rc-actions">
+        <span class="rc-sel-count" id="rc-count"><strong>0</strong> changes selected</span>
+        <button class="btn btn-green" id="apply-btn" onclick="applyChanges()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 6.5L4.5 9.5l6-7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Apply &amp; Reanalyze
+        </button>
+        <button class="btn btn-outline-blue btn-sm" onclick="scrollToRewrite()">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l4 4-4 4M1 5h8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          View rewrite
+        </button>
+      </div>
+    </div>
+
+    <!-- REWRITE -->
+    <div class="card" id="rewrite-card">
+      <div class="sec-head">
+        <div class="sec-title">
+          <div class="sec-icon icon-amber">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M8 1.5L9.5 3l-6 6H2V7.5l6-6z" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Suggested rewrite
+        </div>
+      </div>
+      <div class="rw-box">
+        <div class="rw-text" id="rw-text"></div>
+      </div>
+      <div class="rw-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyRewrite()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 8H2a1 1 0 01-1-1V2a1 1 0 011-1h5a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Copy rewrite
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="useRewriteAsInput()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Use as input &amp; reanalyze
+        </button>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="card export-card">
+      <div class="sec-head">
+        <div class="sec-title">
+          <div class="sec-icon" style="background:var(--blue-light)">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v7M2.5 5l3 3 3-3M1 10h9" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Export results
+        </div>
+      </div>
+      <div class="export-row">
+        <button class="btn btn-primary btn-sm" onclick="exportJSON()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h5l3 3v5a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="white" stroke-width="1.2"/><path d="M7 2v3h3" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Export JSON
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="exportMarkdown()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h5l3 3v5a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2"/><path d="M7 2v3h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Export Markdown
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="printReport()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="4" width="8" height="5" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 4V2h4v2M4 9v1h4V9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Print / PDF
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+</div>
+
+<footer>StoryValidator · Powered by Claude AI · INVEST Framework</footer>
+
+<script>
+let sType='auto', lastData=null;
+
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); sType=c.dataset.type;
+  });
+});
+
+const ta=document.getElementById('ta');
+ta.addEventListener('input',()=>{
+  const n=ta.value.length;
+  document.getElementById('hint').textContent=n?`${n} chars · ⌘+Enter`:'⌘ + Enter to analyze';
+});
+ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')doValidate();});
+
+function clearInput(){
+  ta.value='';
+  document.getElementById('hint').textContent='⌘ + Enter to analyze';
+  document.getElementById('err').classList.remove('vis');
+  ta.focus();
+}
+
+async function doValidate(text){
+  const inputText=(text||ta.value).trim();
+  if(inputText.length<10){showErr('Please enter at least 10 characters.');return;}
+  const btn=document.getElementById('analyze-btn');
+  const loader=document.getElementById('loader');
+  const results=document.getElementById('results');
+  const err=document.getElementById('err');
+  btn.disabled=true; loader.classList.add('vis');
+  results.classList.remove('vis'); err.classList.remove('vis');
+  try{
+    const res=await fetch('/api/validate',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:inputText,type:sType==='auto'?null:sType})
+    });
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Validation failed. Please try again.');
+    lastData=data; renderResults(data);
+  }catch(e){showErr(e.message);}
+  finally{btn.disabled=false;loader.classList.remove('vis');}
+}
+
+function showErr(msg){
+  const e=document.getElementById('err');e.textContent=msg;e.classList.add('vis');
+}
+
+function renderResults(data){
+  const score=data.overallScore;
+  const ringColor=score>=80?'#16a34a':score>=60?'#2563eb':score>=40?'#d97706':'#dc2626';
+  const circ=2*Math.PI*30;
+  const off=circ-(score/100)*circ;
+
+  let gc,gl;
+  if(score>=80){gc='green';gl='Excellent';}
+  else if(score>=60){gc='blue';gl='Good';}
+  else if(score>=40){gc='amber';gl='Needs work';}
+  else{gc='red';gl='Poor';}
+
+  const typeLabel=(data.type||'story').replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  document.getElementById('score-num').textContent=score;
+  document.getElementById('score-label').textContent='Quality assessment';
+  document.getElementById('score-timestamp').textContent='Last analyzed '+now;
+
+  const badgesRow=document.getElementById('badges-row');
+  badgesRow.innerHTML=`
+    <span class="badge badge-gray">${esc(typeLabel)}</span>
+    <span class="badge badge-${gc}">${gl}</span>
+    <span class="badge badge-purple">${score>=60?'INVEST pass':'INVEST fail'}</span>
+  `;
+
+  const ring=document.getElementById('ring-c');
+  ring.style.stroke=ringColor;
+  ring.style.strokeDasharray=circ.toFixed(1);
+  ring.style.strokeDashoffset=circ.toFixed(1);
+
+  const dimsList=document.getElementById('dims-list');
+  dimsList.innerHTML=(data.dimensions||[]).map(d=>{
+    const bc=d.score>=70?'bar-green':d.score>=40?'bar-amber':'bar-red';
+    const vc=d.score>=70?'high':d.score>=40?'mid':'low';
+    return `<div class="dim-row" onclick="this.classList.toggle('open')">
+      <span class="dim-name">${esc(d.name)}</span>
+      <div class="bar-track"><div class="bar ${bc}" data-w="${d.score}"></div></div>
+      <span class="dim-val ${vc}">${d.score}</span>
+      <span class="dim-comment">${esc(d.comment||'')}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('strengths-list').innerHTML=
+    (data.strengths||[]).map(s=>`<li>${esc(s)}</li>`).join('')||'<li>None identified.</li>';
+  document.getElementById('improvements-list').innerHTML=
+    (data.improvements||[]).map(s=>`<li>${esc(s)}</li>`).join('')||'<li>No issues found.</li>';
+
+  renderRC(data.recommendedChanges||[]);
+  document.getElementById('rw-text').innerHTML=esc(data.rewrite||'');
+
+  const results=document.getElementById('results');
+  results.classList.add('vis');
+
+  setTimeout(()=>{
+    ring.style.transition='stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)';
+    ring.style.strokeDashoffset=off.toFixed(1);
+    document.querySelectorAll('.bar').forEach((b,i)=>{
+      setTimeout(()=>{b.style.width=b.dataset.w+'%';},i*50);
+    });
+  },40);
+
+  results.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderRC(changes){
+  const list=document.getElementById('rc-list');
+  list.innerHTML=changes.map(rc=>`
+    <div class="rc-item" id="rc-${rc.id}" onclick="toggleRC('${rc.id}')">
+      <div class="rc-cb" id="cb-${rc.id}">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="display:none" id="ck-${rc.id}">
+          <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="rc-body">
+        <div class="rc-top">
+          <span class="rc-cat badge-gray badge" style="font-size:10px">${esc(rc.category)}</span>
+          <span class="rc-cat priority-${rc.priority||'medium'}" style="font-size:10px">${(rc.priority||'medium').toUpperCase()}</span>
+        </div>
+        <div class="rc-issue">${esc(rc.issue)}</div>
+        <div class="rc-change">${esc(rc.change)}</div>
+        <div class="rc-impact">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M2 4l3-3 3 3" stroke="#0d9488" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ${esc(rc.impact)}
+        </div>
+      </div>
+    </div>
+  `).join('');
+  updateRCCount();
+}
+
+function toggleRC(id){
+  const item=document.getElementById('rc-'+id);
+  item.classList.toggle('selected');
+  const ck=document.getElementById('ck-'+id);
+  ck.style.display=item.classList.contains('selected')?'block':'none';
+  updateRCCount();
+}
+
+function updateRCCount(){
+  const sel=document.querySelectorAll('.rc-item.selected').length;
+  document.getElementById('rc-count').innerHTML=`<strong>${sel}</strong> change${sel!==1?'s':''} selected`;
+}
+
+function selectAll(){
+  document.querySelectorAll('.rc-item').forEach(item=>{
+    item.classList.add('selected');
+    const id=item.id.replace('rc-','');
+    const ck=document.getElementById('ck-'+id);
+    if(ck)ck.style.display='block';
+  });
+  updateRCCount();
+}
+
+function selectNone(){
+  document.querySelectorAll('.rc-item').forEach(item=>{
+    item.classList.remove('selected');
+    const id=item.id.replace('rc-','');
+    const ck=document.getElementById('ck-'+id);
+    if(ck)ck.style.display='none';
+  });
+  updateRCCount();
+}
+
+function applyChanges(){
+  const selected=[];
+  document.querySelectorAll('.rc-item.selected').forEach(item=>{
+    selected.push(item.id.replace('rc-',''));
+  });
+  if(!selected.length){alert('Please select at least one change to apply.');return;}
+
+  const changes=(lastData?.recommendedChanges||[]).filter(rc=>selected.includes(rc.id));
+  const currentText=ta.value.trim();
+  let newText=currentText;
+
+  changes.forEach(rc=>{
+    if(rc.change&&rc.change.length>0){
+      newText=newText+'\n\n[Applied change — '+rc.category+']: '+rc.change;
+    }
+  });
+
+  const changesSummary=changes.map(rc=>rc.change).join('\n\n');
+  const reanalysisPrompt=
+    'Original story:\n"""\n'+currentText+'\n"""\n\n'+
+    'Apply these specific changes:\n'+changesSummary+'\n\n'+
+    'Please incorporate these changes into the story and reanalyze it.';
+
+  ta.value=currentText+'\n\n--- Applied changes ---\n'+changesSummary;
+  ta.dispatchEvent(new Event('input'));
+  doValidate(
+    'Please analyze this improved version which incorporates the following recommended changes:\n\nOriginal:\n"""\n'+currentText+'\n"""\n\nWith these changes applied:\n'+changesSummary+'\n\nAnalyze the resulting improved story that combines the original intent with these enhancements.'
+  );
+}
+
+function scrollToRewrite(){
+  document.getElementById('rewrite-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copyRewrite(){
+  const t=document.getElementById('rw-text')?.innerText||'';
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn=document.querySelector('[onclick="copyRewrite()"]');
+    if(btn){const orig=btn.innerHTML;btn.textContent='Copied!';setTimeout(()=>btn.innerHTML=orig,1800);}
+  });
+}
+
+function useRewriteAsInput(){
+  const t=document.getElementById('rw-text')?.innerText||'';
+  if(!t)return;
+  ta.value=t;
+  ta.dispatchEvent(new Event('input'));
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>doValidate(),300);
+}
+
+function exportJSON(){
+  if(!lastData){alert('No results to export yet.');return;}
+  const blob=new Blob([JSON.stringify(lastData,null,2)],{type:'application/json'});
+  dl(blob,'story-validator-results.json');
+}
+
+function exportMarkdown(){
+  if(!lastData){alert('No results to export yet.');return;}
+  const d=lastData;
+  const score=d.overallScore;
+  let md='# Story Validator Report\n\n';
+  md+=`**Overall Score:** ${score}/100\n`;
+  md+=`**Type:** ${(d.type||'auto').replace('_',' ')}\n`;
+  md+=`**Grade:** ${score>=80?'Excellent':score>=60?'Good':score>=40?'Needs Work':'Poor'}\n\n`;
+  md+='## Dimension Breakdown\n\n';
+  (d.dimensions||[]).forEach(dim=>{
+    md+=`- **${dim.name}:** ${dim.score}/100 — ${dim.comment}\n`;
+  });
+  md+='\n## Strengths\n\n';
+  (d.strengths||[]).forEach(s=>{md+=`- ${s}\n`;});
+  md+='\n## Improvements Needed\n\n';
+  (d.improvements||[]).forEach(s=>{md+=`- ${s}\n`;});
+  md+='\n## Recommended Changes\n\n';
+  (d.recommendedChanges||[]).forEach(rc=>{
+    md+=`### ${rc.category} (${rc.priority})\n`;
+    md+=`**Issue:** ${rc.issue}\n\n`;
+    md+=`**Change:** ${rc.change}\n\n`;
+    md+=`**Impact:** ${rc.impact}\n\n`;
+  });
+  md+='\n## Suggested Rewrite\n\n';
+  md+=d.rewrite||'';
+  const blob=new Blob([md],{type:'text/markdown'});
+  dl(blob,'story-validator-report.md');
+}
+
+function printReport(){
+  if(!lastData){alert('No results to export yet.');return;}
+  window.print();
+}
+
+function dl(blob,name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function esc(s){
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
